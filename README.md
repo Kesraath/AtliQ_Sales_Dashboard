@@ -326,22 +326,51 @@ Now, we export the data set as a CSV. In an ideal world, I would make a new Tabl
 
 ### Creating Dashboard
 
-The dashboard should contain only the most pertinent data the Sales Manager requires. Not having been given any specifics, we will assume the following is needed:
-- Sales Totals by Month filterable by year
-- Sales and sales quantity comparisons between each year
-- Tables that show the number of sales and sales quantities by month for each region
-- The makeup of the sales by year
-- A running sales comparison between all years
+View the Tableau Dashboard in full [AtliQ Sales Dashboard](https://public.tableau.com/app/profile/kes.andrew.raath/viz/AtliQSalesDashboard_16988232682060/AtliqHome)
 
-These should give the Sales Manager the exact numbers they would be looking for to decide which region to focus more on.
+##### Pages
 
-View the Tableau Dashboard in full [AtliQ Sales Dashboard](https://public.tableau.com/app/profile/kes.andrew.raath/viz/AtliQSalesDashboard_16988232682060/AtliQSalesDashboard)
+I wanted to create 3 landing pages with one main page to see how the company is doing. You will then have the option to go to the regional breakdown and product and store breakdowns.
+This should create a far more comprehensive dashboard that will allow the Sales Manager to create more data-driven decisions as to how to improve a specific region, and which products do best.
 
-![alt text](https://github.com/Kesraath/AtliQ_Sales_Dashboard/blob/AtliQProjectFiles/AtliQ%20Sales%20Dashboard.png?raw=true)
+###### Calculations
+
+To have all the pages affected by the same filters, I set parameters for the year labelled 'Choose Year'. This is then used to set the date of the selected year for calculations. 
+
+``` sql
+INT(YEAR([Order Date]) = YEAR((MAKEDATE([Choose Year],01,01)))) * [Sales]
+```
+This a calculated field for the YTD Sales that sets the integer of 1 for all 'Order Date' rows that match the same year as the 'Choose Year' parameter. YTD here is relative to the parameter's selected timeframe. 
+
+To achieve the previous year's calculation in the 'Choose Year' side of the calculated field I subtract 1. 
+
+To filter the unique products by each year according to the 'Choose Year' parameter again. 
+``` sql
+IF DATEPART('year', [Order Date]) = YEAR(MAKEDATE([Choose Year],01,01)) THEN [Product Code] END
+```
+This is similar to the YTD Sales calculated field, but it returns the product codes in the chosen year.
+To then get the difference of distinct products year on year 
+
+``` sql
+((COUNTD([Filter Products Current Year]))-(COUNTD([Filter Products Previous Year])))
+/
+(COUNTD([Filter Products Previous Year]))
+```
+Counting distinct product codes in the (selected year - previous year) / previous year gives us the percentage change year on year for the number of new products sold or whether less products were in circulation. 
+
+To parse through how things were set up, the Tableau file can be downloaded here as well: [Project Files](https://github.com/Kesraath/AtliQ_Sales_Dashboard/blob/AtliQProjectFiles/AtliQSalesDashboard.twb)
 
 ### Results
-- Increase productivity
-- Streamline sales manager's access to sales information
-- 
+- An automated dashboard that provides the latest sales insights to support data-driven decision-making for the Sales Manager
+- The sales team saves up to 20% of business time manually gathering data and reinvesting it into value-added activities
+
+### Future Considerations, Research & Changes
+Potential changes down the line to better streamline the process would be to create more pages. These pages could include:
+- A product breakdown per region
+  - Successful products in general, and products that may require more analysis to understand their poor performance
+- Store growth and success rate of new stores
+- A potential avenue for more customer analytics regarding economics and purchase power for the products as well as demand
+- Adding data for MTD comparisons for previous months as well as prior years' months comparisons. 
+    
 
 
